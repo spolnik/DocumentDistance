@@ -3,9 +3,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class DocumentDistanceCalc {
     public static void main(String[] args) {
@@ -111,21 +109,22 @@ public class DocumentDistanceCalc {
     // # Operation 3: count frequency of each word ##
     // ##############################################
     private List<Tuple> countFrequency(List<String> words) {
-        List<Tuple> freq = new ArrayList<>();
+        Map<String, Integer> freq = new HashMap<>();
 
         for (String word : words) {
-            Tuple tuple = new Tuple(word);
-
-            int index = freq.indexOf(tuple);
-
-            if (index > -1) {
-                freq.get(index).count++;
+            if (freq.containsKey(word)) {
+                freq.put(word, freq.get(word) + 1);
             } else {
-                freq.add(tuple);
+                freq.put(word, 1);
             }
         }
 
-        return freq;
+        List<Tuple> result = new ArrayList<>();
+        for (String key : freq.keySet()) {
+            result.add(new Tuple(key, freq.get(key)));
+        }
+
+        return result;
     }
 
     // ###################################################
@@ -139,9 +138,9 @@ public class DocumentDistanceCalc {
         String word;
         int count;
 
-        Tuple(String word) {
+        Tuple(String word, int count) {
             this.word = word;
-            this.count = 1;
+            this.count = count;
         }
 
         @Override
