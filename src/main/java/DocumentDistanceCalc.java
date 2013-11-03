@@ -98,7 +98,7 @@ public class DocumentDistanceCalc {
     private List<String> getWordsFromString(String line) {
         List<String> words = new ArrayList<>();
 
-        for (String word : line.split(" ")) {
+        for (String word : line.split("[^\\w']+")) {
             words.add(word.toLowerCase());
         }
 
