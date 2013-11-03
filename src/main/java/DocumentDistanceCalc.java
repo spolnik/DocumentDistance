@@ -33,12 +33,22 @@ public class DocumentDistanceCalc {
 
     private Double inner_product(List<Tuple> list1, List<Tuple> list2) {
         Double sum = 0.0;
+        int i = 0;
+        int j = 0;
 
-        for (Tuple tuple1 : list1) {
-            for (Tuple tuple2 : list2) {
-                if (tuple1.word.equals(tuple2.word)) {
-                    sum += tuple1.count * tuple2.count;
-                }
+        while (i < list1.size() && j < list2.size()) {
+            // # L1[i:] and L2[j:] yet to be processed
+            if (list1.get(i).word.equals(list2.get(j).word)) {
+                //# both vectors have this word
+                sum += list1.get(i).count * list2.get(j).count;
+                i++;
+                j++;
+            } else if (list1.get(i).word.compareTo(list2.get(j).word) < 0) {
+                // # word L1[i][0] is in L1 but not L2
+                i++;
+            } else {
+                // # word L2[j][0] is in L2 but not L1
+                j++;
             }
         }
 
