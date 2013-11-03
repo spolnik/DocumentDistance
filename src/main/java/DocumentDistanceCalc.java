@@ -16,52 +16,39 @@ public class DocumentDistanceCalc {
 
         DocumentDistanceCalc documentDistanceCalc = new DocumentDistanceCalc();
 
-        List<Tuple> sortedWordList1 = documentDistanceCalc.calculateWordFreqForFile(path1);
-        List<Tuple> sortedWordList2 = documentDistanceCalc.calculateWordFreqForFile(path2);
+        Map<String, Integer> wordMap1 = documentDistanceCalc.calculateWordFreqForFile(path1);
+        Map<String, Integer> wordMap2 = documentDistanceCalc.calculateWordFreqForFile(path2);
 
-        Double distance = documentDistanceCalc.vectorAngle(sortedWordList1, sortedWordList2);
+        Double distance = documentDistanceCalc.vectorAngle(wordMap1, wordMap2);
         System.out.printf("The distance between the documents is: %.6f (radians)", distance);
     }
 
-    private Double vectorAngle(List<Tuple> list1, List<Tuple> list2) {
-        Double numerator = inner_product(list1, list2);
-        Double denominator = Math.sqrt(inner_product(list1, list1) * inner_product(list2, list2));
+    private Double vectorAngle(Map<String, Integer> map1, Map<String, Integer> map2) {
+        Double numerator = inner_product(map1, map2);
+        Double denominator = Math.sqrt(inner_product(map1, map1) * inner_product(map2, map2));
         return Math.acos(numerator/denominator);
     }
 
-    private Double inner_product(List<Tuple> list1, List<Tuple> list2) {
+    private Double inner_product(Map<String, Integer> map1, Map<String, Integer> map2) {
         Double sum = 0.0;
-        int i = 0;
-        int j = 0;
 
-        while (i < list1.size() && j < list2.size()) {
-            // # L1[i:] and L2[j:] yet to be processed
-            if (list1.get(i).word.equals(list2.get(j).word)) {
-                //# both vectors have this word
-                sum += list1.get(i).count * list2.get(j).count;
-                i++;
-                j++;
-            } else if (list1.get(i).word.compareTo(list2.get(j).word) < 0) {
-                // # word L1[i][0] is in L1 but not L2
-                i++;
-            } else {
-                // # word L2[j][0] is in L2 but not L1
-                j++;
+        for (String key : map1.keySet()) {
+            if (map2.containsKey(key)) {
+                sum += map1.get(key) * map2.get(key);
             }
         }
 
         return sum;
     }
 
-    private List<Tuple> calculateWordFreqForFile(Path path) {
+    private Map<String, Integer> calculateWordFreqForFile(Path path) {
         List<String> lines = readFile(path);
         List<String> words = getWordsFromLineList(lines);
-        List<Tuple> freqMapping = countFrequency(words);
-        insertionSort(freqMapping);
+        Map<String, Integer> freqMapping = countFrequency(words);
 
-        System.out.println("File" + path.toString() + ":");
-        System.out.println(lines.size() +" lines,");
-        System.out.println(words.size() + " words,");
+        System.out.print("File" + path.toString() + ":");
+        System.out.print(lines.size() +" lines,");
+        System.out.print(words.size() + " words,");
         System.out.println(freqMapping.size() + " distinct words");
 
         return freqMapping;
@@ -98,7 +85,7 @@ public class DocumentDistanceCalc {
     private List<String> getWordsFromString(String line) {
         List<String> words = new ArrayList<>();
 
-        for (String word : line.split("[^\\w']+")) {
+        for (String word : line.split("[^a-zA-Z0-9]+")) {
             words.add(word.toLowerCase());
         }
 
@@ -108,7 +95,7 @@ public class DocumentDistanceCalc {
     // ##############################################
     // # Operation 3: count frequency of each word ##
     // ##############################################
-    private List<Tuple> countFrequency(List<String> words) {
+    private Map<String, Integer> countFrequency(List<String> words) {
         Map<String, Integer> freq = new HashMap<>();
 
         for (String word : words) {
@@ -119,51 +106,6 @@ public class DocumentDistanceCalc {
             }
         }
 
-        List<Tuple> result = new ArrayList<>();
-        for (String key : freq.keySet()) {
-            result.add(new Tuple(key, freq.get(key)));
-        }
-
-        return result;
-    }
-
-    // ###################################################
-    // # Operation 4: sort words into alphabetic order ###
-    // ###################################################
-    private void insertionSort(List<Tuple> words) {
-        Collections.sort(words);
-    }
-
-    class Tuple implements Comparable<Tuple> {
-        String word;
-        int count;
-
-        Tuple(String word, int count) {
-            this.word = word;
-            this.count = count;
-        }
-
-        @Override
-        public int compareTo(Tuple o) {
-            return word.compareTo(o.word);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-
-            Tuple tuple = (Tuple) o;
-
-            return word.equals(tuple.word);
-
-        }
-
-        @Override
-        public int hashCode() {
-            return word.hashCode();
-        }
+        return freq;
     }
 }
