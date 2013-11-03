@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,12 +43,11 @@ public class DocumentDistanceCalc {
     }
 
     private Map<String, Integer> calculateWordFreqForFile(Path path) {
-        List<String> lines = readFile(path);
-        List<String> words = getWordsFromLineList(lines);
+        String fileContent = readFile(path);
+        List<String> words = getWordsFromString(fileContent);
         Map<String, Integer> freqMapping = countFrequency(words);
 
         System.out.print("File" + path.toString() + ":");
-        System.out.print(lines.size() +" lines,");
         System.out.print(words.size() + " words,");
         System.out.println(freqMapping.size() + " distinct words");
 
@@ -57,9 +57,11 @@ public class DocumentDistanceCalc {
     // ##################################
     // # Operation 1: read a text file ##
     // ##################################
-    private List<String> readFile(Path path) {
+    private String readFile(Path path) {
         try {
-            return Files.readAllLines(path, Charset.defaultCharset());
+            Charset encoding = Charset.defaultCharset();
+            byte[] encoded = Files.readAllBytes(path);
+            return encoding.decode(ByteBuffer.wrap(encoded)).toString();
         } catch (IOException e) {
             System.err.println("Error opening or reading input file:" + path.toString());
             e.printStackTrace();
@@ -71,17 +73,6 @@ public class DocumentDistanceCalc {
     // #################################################
     // # Operation 2: split the text lines into words ##
     // #################################################
-    private List<String> getWordsFromLineList(List<String> lines) {
-        List<String> wordList = new ArrayList<>();
-
-        for (String line : lines) {
-            List<String> words_in_line = getWordsFromString(line);
-            wordList.addAll(words_in_line);
-        }
-
-        return wordList;
-    }
-
     private List<String> getWordsFromString(String line) {
         List<String> words = new ArrayList<>();
 
